@@ -1,6 +1,7 @@
 package solvers
 
 import breeze.linalg.{DenseMatrix, DenseVector, norm}
+import generated.MatrixFactory
 import org.scalatest.{FlatSpec, Matchers}
 
 abstract class SolverTest(solver: Solver, name: String) extends FlatSpec with Matchers{
@@ -67,5 +68,19 @@ abstract class SolverTest(solver: Solver, name: String) extends FlatSpec with Ma
   it should "give NotAMarkovChain answer if the matrix is not a valid Markov Chain OTHER EXAMPLE" in {
     val Left(solution) = solver.solveSteadyState(INVALID_NEG_NUMS_3x3_MC)
     solution shouldBe NotAMarkovChain
+  }
+
+  ignore should("count a big generated matrix - binary") in {
+    for (i <- 3 to 100) {
+      val Right(solution) = solver.solveSteadyState(MatrixFactory.makeBinary(i))
+      println(solution.toString())
+    }
+  }
+
+  ignore should("count a big generated matrix - simple") in {
+    for (i <- 3 to 100) {
+      val Right(solution) = solver.solveSteadyState(MatrixFactory.makeSimple(i))
+      println(solution.toString())
+    }
   }
 }

@@ -1,7 +1,7 @@
 package solvers
 
 import breeze.linalg.{DenseMatrix, DenseVector, norm, sum}
-import com.sun.javaws.exceptions.InvalidArgumentException
+import excepctions.InvalidMatrixException
 import solvers.Solver.Solution
 
 class PowerSolver(threshold: Double) extends Solver {
@@ -16,10 +16,11 @@ class PowerSolver(threshold: Double) extends Solver {
     try {
       gamma = chooseGamma(q)
     } catch {
-      case exp: InvalidArgumentException => return Left(NotAMarkovChain)
+      case _: InvalidMatrixException => return Left(NotAMarkovChain)
+      case e: Exception => e.printStackTrace()
     }
 
-    var v: DenseVector[Double] = DenseVector.fill(q.rows){1.0 / q.rows}
+    val v: DenseVector[Double] = DenseVector.fill(q.rows){1.0 / q.rows}
 
     var converged = false
 
@@ -36,15 +37,16 @@ class PowerSolver(threshold: Double) extends Solver {
     for( i <- 0 until Q.rows ) {
       var rowSum: Double = 0
       for ( j <- 0 until Q.cols ) {
-        if ( i != j && Q(i, j) < 0 ) throw new InvalidArgumentException(Array("matrix is not a markov chain"))
-        if ( Q(i, j) > qMax ) {
-          qMax = Q(i, j)
+        val act = Q(i, j)
+        if ( i != j && act < 0 ) throw new InvalidMatrixException()
+        if ( act > qMax ) {
+          qMax = act
         }
-        rowSum += Q(i, j)
+        rowSum += act
       }
-      if ( rowSum > threshold ) throw new InvalidArgumentException(Array("matrix is not a markov chain"))
+      if ( rowSum > threshold ) throw new InvalidMatrixException()
     }
-    return qMax + 0.01
+    return qMax + 2
   }
 }
 
