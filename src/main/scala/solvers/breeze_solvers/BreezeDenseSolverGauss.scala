@@ -1,16 +1,17 @@
-package solvers
+package solvers.breeze_solvers
 
 import breeze.linalg.{DenseMatrix, DenseVector, sum}
-import solvers.Solver.Solution
+import solvers.{NotAMarkovChain, ReducibleMarkovChain}
+import solvers.breeze_solvers.BreezeDenseSolver.Solution
 
-class GaussSolver(threshold: Double) extends Solver {
+class BreezeDenseSolverGauss(threshold: Double) extends BreezeDenseSolver {
 
   override def solveSteadyState(q: DenseMatrix[Double]): Solution = {
     if (q.rows != q.cols) {
       return Left(NotAMarkovChain)
     }
 
-    val gauss = reducateAndSetMultipliers(q)
+    val gauss = reductionAndSetMultipliers(q)
     val freeParams =  checkReducibility(gauss)
     if (freeParams > 1) {
       return Left(ReducibleMarkovChain(freeParams))
@@ -24,7 +25,7 @@ class GaussSolver(threshold: Double) extends Solver {
     return Right(resultVector / sum(resultVector))
   }
 
-  private def reducateAndSetMultipliers(q: DenseMatrix[Double]): DenseMatrix[Double] = {
+  private def reductionAndSetMultipliers(q: DenseMatrix[Double]): DenseMatrix[Double] = {
     val matrix = q.copy
     for (i <- 0 until matrix.rows; j <- i + 1 until matrix.cols) {
       matrix(i, j) /= - matrix(i, i)
@@ -60,7 +61,7 @@ class GaussSolver(threshold: Double) extends Solver {
   }
 }
 
-object GaussSolver extends GaussSolver(1e-10) {
-  def withThreshold(threshold: Double): GaussSolver = new GaussSolver(threshold)
+object BreezeDenseSolverGauss extends BreezeDenseSolverGauss(1e-10) {
+  def withThreshold(threshold: Double): BreezeDenseSolverGauss = new BreezeDenseSolverGauss(threshold)
 
 }

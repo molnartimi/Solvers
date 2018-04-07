@@ -1,10 +1,11 @@
-package solvers
+package solvers.breeze_solvers
 
 import breeze.linalg.{DenseMatrix, DenseVector, norm, sum}
 import excepctions.InvalidMatrixException
-import solvers.Solver.Solution
+import solvers.NotAMarkovChain
+import solvers.breeze_solvers.BreezeDenseSolver.Solution
 
-class PowerSolver(threshold: Double) extends Solver {
+class BreezeDenseSolverPower(threshold: Double) extends BreezeDenseSolver {
   require(threshold > 0, "threshold must be positive")
 
   override def solveSteadyState(q: DenseMatrix[Double]): Solution = {
@@ -50,6 +51,6 @@ class PowerSolver(threshold: Double) extends Solver {
   }
 }
 
-object PowerSolver extends PowerSolver(1e-10) {
-  def withThreshold(threshold: Double): GaussSolver = new GaussSolver(threshold)
+object BreezeDenseSolverPower extends BreezeDenseSolverPower(1e-10) {
+  def withThreshold(threshold: Double): BreezeDenseSolverPower = new BreezeDenseSolverPower(threshold)
 }

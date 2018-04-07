@@ -1,10 +1,12 @@
-package solvers
+package solvers.mtj_solvers
 
-import no.uib.cipr.matrix.{DenseMatrix, DenseVector, Vector}
 import no.uib.cipr.matrix.sparse.LinkedSparseMatrix
+import no.uib.cipr.matrix.{DenseMatrix, DenseVector, Vector}
 import org.scalatest.{FlatSpec, Matchers}
+import solvers.NotAMarkovChain
+import solvers.matrix_toolkits_java_solvers.MTJSparseSolver
 
-class SparseSolverTest(solver: SparseSolver, name: String) extends FlatSpec with Matchers{
+class MTJSparseSolverSpec(solver: MTJSparseSolver, name: String) extends FlatSpec with Matchers{
   val VALID_4x4_MC = (
     new LinkedSparseMatrix(new DenseMatrix(Array(
       Array(-4.0, 1.0, 2.0, 1.0),

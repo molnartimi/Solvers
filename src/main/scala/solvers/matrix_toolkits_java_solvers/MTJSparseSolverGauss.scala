@@ -1,10 +1,11 @@
-package solvers
+package solvers.matrix_toolkits_java_solvers
 
-import no.uib.cipr.matrix.{DenseVector}
+import no.uib.cipr.matrix.DenseVector
 import no.uib.cipr.matrix.sparse.LinkedSparseMatrix
-import solvers.SparseSolver.Solution
+import solvers.{NotAMarkovChain, ReducibleMarkovChain}
+import solvers.matrix_toolkits_java_solvers.MTJSparseSolver.Solution
 
-class SparseGaussSolver(threshold: Double) extends SparseSolver {
+class MTJSparseSolverGauss(threshold: Double) extends MTJSparseSolver {
 
   override def solveSteadyState(q: LinkedSparseMatrix): Solution = {
     if (q.numRows() != q.numColumns()) {
@@ -67,7 +68,7 @@ class SparseGaussSolver(threshold: Double) extends SparseSolver {
   }
 }
 
-object SparseGaussSolver extends SparseGaussSolver(1e-10) {
-  def withThreshold(threshold: Double): GaussSolver = new GaussSolver(threshold)
+object MTJSparseSolverGauss extends MTJSparseSolverGauss(1e-10) {
+  def withThreshold(threshold: Double): MTJSparseSolverGauss = new MTJSparseSolverGauss(threshold)
 
 }

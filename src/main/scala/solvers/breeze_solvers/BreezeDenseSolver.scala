@@ -1,13 +1,11 @@
-package solvers
+package solvers.breeze_solvers
 
 import breeze.linalg.{DenseMatrix, DenseVector}
+import solvers.{NotAMarkovChain, ReducibleMarkovChain, SolverError}
 
-sealed trait SolverError
-case object NotAMarkovChain extends SolverError
-case class ReducibleMarkovChain(kernelDimension: Int) extends SolverError
+trait BreezeDenseSolver {
+  def solveSteadyState(q: DenseMatrix[Double]): BreezeDenseSolver.Solution
 
-trait Solver {
-  def solveSteadyState(q: DenseMatrix[Double]): Solver.Solution
   protected def validResultVector(vec: DenseVector[Double]): Boolean = {
     var pos = false
     var neg = false
@@ -19,7 +17,7 @@ trait Solver {
   }
 }
 
-object Solver {
+object BreezeDenseSolver {
   type Solution = Either[SolverError, DenseVector[Double]]
 
   def solutionToMessage(solution: Solution): String = solution match {

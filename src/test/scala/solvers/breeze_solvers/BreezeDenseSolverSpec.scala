@@ -1,10 +1,11 @@
-package solvers
+package solvers.breeze_solvers
 
 import breeze.linalg.{DenseMatrix, DenseVector, norm}
 import generated.MatrixFactory
 import org.scalatest.{FlatSpec, Matchers}
+import solvers.NotAMarkovChain
 
-abstract class SolverTest(solver: Solver, name: String) extends FlatSpec with Matchers{
+abstract class BreezeDenseSolverSpec(solver: BreezeDenseSolver, name: String) extends FlatSpec with Matchers{
   val VALID_4x4_MC = (
     DenseMatrix(
     (-4.0, 1.0, 2.0, 1.0),
@@ -12,7 +13,7 @@ abstract class SolverTest(solver: Solver, name: String) extends FlatSpec with Ma
     (0.0, 1.0, -3.0, 2.0),
     (0.0, 0.0, 5.0, -5.0)
     ),
-    (DenseVector(0.25, 0.25, 2, 1) / 3.5)
+    DenseVector(0.25, 0.25, 2, 1) / 3.5
   )
 
   val INVALID_2x3_MC  = DenseMatrix(
@@ -70,14 +71,14 @@ abstract class SolverTest(solver: Solver, name: String) extends FlatSpec with Ma
     solution shouldBe NotAMarkovChain
   }
 
-  ignore should("count a big generated matrix - binary") in {
+  ignore should "count a lot of big generated matrix - binary" in {
     for (i <- 3 to 100) {
       val Right(solution) = solver.solveSteadyState(MatrixFactory.makeBinary(i))
       println(solution.toString())
     }
   }
 
-  ignore should("count a big generated matrix - simple") in {
+  ignore should "count a lot of big generated matrix - simple" in {
     for (i <- 3 to 100) {
       val Right(solution) = solver.solveSteadyState(MatrixFactory.makeSimple(i))
       println(solution.toString())

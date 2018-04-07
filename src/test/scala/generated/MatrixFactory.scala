@@ -1,7 +1,7 @@
 package generated
 
 import breeze.linalg.{DenseMatrix, DenseVector}
-import solvers.SolverError
+import solvers.breeze_solvers.SolverError
 
 object MatrixFactory {
   type BreezeResult = Either[(DenseMatrix[Double], DenseVector[Double]), SolverError]

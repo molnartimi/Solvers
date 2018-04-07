@@ -1,10 +1,11 @@
-package solvers
+package solvers.matrix_toolkits_java_solvers
 
 import no.uib.cipr.matrix.DenseVector
 import no.uib.cipr.matrix.sparse.LinkedSparseMatrix
+import solvers.{NotAMarkovChain, ReducibleMarkovChain, SolverError}
 
-trait SparseSolver {
-  def solveSteadyState(q: LinkedSparseMatrix): SparseSolver.Solution
+trait MTJSparseSolver {
+  def solveSteadyState(q: LinkedSparseMatrix): MTJSparseSolver.Solution
   protected def validResultVector(vec: DenseVector): Boolean = {
     var pos = false
     var neg = false
@@ -16,7 +17,7 @@ trait SparseSolver {
   }
 }
 
-object SparseSolver {
+object MTJSparseSolver {
   type Solution = Either[SolverError, DenseVector]
 
   def solutionToMessage(solution: Solution): String = solution match {
