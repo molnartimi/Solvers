@@ -1,11 +1,11 @@
 package solvers
 
-import breeze.linalg.{DenseMatrix, DenseVector, sum}
 import solvers.Solver.Solution
+import wrapper.{Matrix, Vector, VectorFactory}
 
 class GaussSolver(threshold: Double) extends Solver {
 
-  override def solveSteadyState(q: DenseMatrix[Double]): Solution = {
+  override def solveSteadyState(q: Matrix): Solution = {
     if (q.rows != q.cols) {
       return Left(NotAMarkovChain)
     }
@@ -21,23 +21,23 @@ class GaussSolver(threshold: Double) extends Solver {
       return Left(NotAMarkovChain)
     }
 
-    return Right(resultVector / sum(resultVector))
+    return Right(resultVector / resultVector.sum())
   }
 
-  private def reducateAndSetMultipliers(q: DenseMatrix[Double]): DenseMatrix[Double] = {
-    val matrix = q.copy
+  private def reducateAndSetMultipliers(q: Matrix): Matrix = {
+    val matrix = q.copy()
     for (i <- 0 until matrix.rows; j <- i + 1 until matrix.cols) {
-      matrix(i, j) /= - matrix(i, i)
+      matrix.set(i, j, matrix(i, j) / (-matrix(i, i)))
       for (k <- i + 1 until matrix.rows) {
-        matrix(k, j) += matrix(i, j) * matrix(k, i)
+        matrix.set(k, j, matrix(k, j) + matrix(i, j) * matrix(k, i))
       }
     }
     return matrix
   }
 
-  private def calculateResultVector(q: DenseMatrix[Double]): DenseVector[Double] = {
-    val resultVector = DenseVector.zeros[Double](q.cols)
-    resultVector(-1) = 1
+  private def calculateResultVector(q: Matrix): Vector = {
+    val resultVector = Array.ofDim[Double](q.cols())
+    resultVector(q.cols()-1) = 1
 
     for (j <- q.cols-2 to 0 by -1) {
       for (i <- j + 1 until q.rows) {
@@ -46,10 +46,10 @@ class GaussSolver(threshold: Double) extends Solver {
       resultVector(j) /= - q(j, j)
     }
 
-    return resultVector
+    return VectorFactory.create(resultVector)
   }
 
-  private def checkReducibility(q: DenseMatrix[Double]): Int = {
+  private def checkReducibility(q: Matrix): Int = {
     var ctr = 0
     for (row <- 0 until q.rows) {
         if (Math.abs(q(row, row)) < threshold || q(row, row).isNaN) {

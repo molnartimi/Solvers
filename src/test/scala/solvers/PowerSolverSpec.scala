@@ -1,3 +1,3 @@
 package solvers
 
-class PowerSolverSpec extends SolverTest(PowerSolver, "power iteration") {}
+class PowerSolverSpec extends SolverSpec(PowerSolver, "power iteration") {}
