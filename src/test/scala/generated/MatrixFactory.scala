@@ -16,16 +16,16 @@ object MatrixFactory {
 
   private def toDenseMatrix(matrix: Array[Array[Double]]): DenseMatrix[Double] = {
     val n = matrix.length
-    var result = Array.ofDim[Double](n * n)
+    val result = Array.ofDim[Double](n * n)
     for(i <- 0 until n; j <- 0 until n) {
-      result(i * n + j) =matrix(j)(i)
+      result(i * n + j) = matrix(j)(i)
     }
 
     new DenseMatrix(n, n, result)
   }
 
   private def generateBinary(n: Int): Array[Array[Double]] = {
-    var matrix = Array.ofDim[Double](n, n)
+    val matrix = Array.ofDim[Double](n, n)
 
     matrix(0) = Array[Double](-(n-1)) ++ Array.fill[Double](n-1)(1)
 
