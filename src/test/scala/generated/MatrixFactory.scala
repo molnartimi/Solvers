@@ -1,17 +1,26 @@
 package generated
 
 import breeze.linalg.{DenseMatrix, DenseVector}
-import solvers.breeze_solvers.SolverError
+import no.uib.cipr.matrix.sparse.LinkedSparseMatrix
+import solvers.SolverError
 
 object MatrixFactory {
   type BreezeResult = Either[(DenseMatrix[Double], DenseVector[Double]), SolverError]
 
-  def makeBinary(n: Int): DenseMatrix[Double] = {
+  def makeBreezeBinary(n: Int): DenseMatrix[Double] = {
     toDenseMatrix(generateBinary(n))
   }
 
-  def makeSimple(n: Int): DenseMatrix[Double] = {
+  def makeBreezeSimple(n: Int): DenseMatrix[Double] = {
     toDenseMatrix(generateSimple(n))
+  }
+
+  def makeSparseBinary(n: Int): LinkedSparseMatrix = {
+    toSparseMatrix(generateBinary(n))
+  }
+
+  def makeSparseSimple(n: Int): LinkedSparseMatrix = {
+    toSparseMatrix(generateSimple(n))
   }
 
   private def toDenseMatrix(matrix: Array[Array[Double]]): DenseMatrix[Double] = {
@@ -22,6 +31,10 @@ object MatrixFactory {
     }
 
     new DenseMatrix(n, n, result)
+  }
+
+  private def toSparseMatrix(matrix: Array[Array[Double]]): LinkedSparseMatrix = {
+    new LinkedSparseMatrix(new no.uib.cipr.matrix.DenseMatrix(matrix))
   }
 
   private def generateBinary(n: Int): Array[Array[Double]] = {

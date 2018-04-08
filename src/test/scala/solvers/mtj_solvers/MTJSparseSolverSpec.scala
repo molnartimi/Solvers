@@ -1,5 +1,6 @@
 package solvers.mtj_solvers
 
+import generated.MatrixFactory
 import no.uib.cipr.matrix.sparse.LinkedSparseMatrix
 import no.uib.cipr.matrix.{DenseMatrix, DenseVector, Vector}
 import org.scalatest.{FlatSpec, Matchers}
@@ -70,6 +71,20 @@ class MTJSparseSolverSpec(solver: MTJSparseSolver, name: String) extends FlatSpe
   it should "give NotAMarkovChain answer if the matrix is not a valid Markov Chain OTHER EXAMPLE" in {
     val Left(solution) = solver.solveSteadyState(INVALID_NEG_NUMS_3x3_MC)
     solution shouldBe NotAMarkovChain
+  }
+
+  it should "count a lot of big generated matrix - binary" in {
+    for (i <- 3 to 100) {
+      val Right(solution) = solver.solveSteadyState(MatrixFactory.makeSparseBinary(i))
+      println(solution.toString())
+    }
+  }
+
+  it should "count a lot of big generated matrix - simple" in {
+    for (i <- 3 to 100) {
+      val Right(solution) = solver.solveSteadyState(MatrixFactory.makeSparseSimple(i))
+      println(solution.toString())
+    }
   }
 
   private def norm(v: Vector): Double = {
