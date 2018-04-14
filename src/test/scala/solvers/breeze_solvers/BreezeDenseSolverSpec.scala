@@ -71,17 +71,4 @@ abstract class BreezeDenseSolverSpec(solver: BreezeDenseSolver, name: String) ex
     solution shouldBe NotAMarkovChain
   }
 
-  it should "count a lot of big generated matrix - binary" in {
-    for (i <- 3 to 100) {
-      val Right(solution) = solver.solveSteadyState(MatrixFactory.makeBreezeBinary(i))
-      println(solution.toString())
-    }
-  }
-
-  it should "count a lot of big generated matrix - simple" in {
-    for (i <- 3 to 100) {
-      val Right(solution) = solver.solveSteadyState(MatrixFactory.makeBreezeSimple(i))
-      println(solution.toString())
-    }
-  }
 }

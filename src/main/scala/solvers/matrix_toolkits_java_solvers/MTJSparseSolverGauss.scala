@@ -23,10 +23,10 @@ class MTJSparseSolverGauss(threshold: Double) extends MTJSparseSolver {
       return Left(NotAMarkovChain)
     }
 
-    return Right(resultVector.scale(1 / sum(resultVector)))
+    Right(resultVector.scale(1 / sum(resultVector)))
   }
 
-  private def reducateAndSetMultipliers(q: LinkedSparseMatrix) {
+  private def reducateAndSetMultipliers(q: LinkedSparseMatrix): Unit = {
     for (i <- 0 until q.numRows(); j <- i + 1 until q.numColumns()) {
       q.set(i, j, q.get(i,j) / (-q.get(i, i)))
       for (k <- i + 1 until q.numRows()) {
@@ -46,7 +46,7 @@ class MTJSparseSolverGauss(threshold: Double) extends MTJSparseSolver {
       resultVector.set(j, resultVector.get(j) / (-q.get(j, j)))
     }
 
-    return resultVector
+    resultVector
   }
 
   private def checkReducibility(q: LinkedSparseMatrix): Int = {
@@ -56,7 +56,7 @@ class MTJSparseSolverGauss(threshold: Double) extends MTJSparseSolver {
         ctr += 1
       }
     }
-    return ctr
+    ctr
   }
 
   private def sum(v: DenseVector): Double = {
@@ -64,7 +64,7 @@ class MTJSparseSolverGauss(threshold: Double) extends MTJSparseSolver {
     for (i <- 0 until v.size()) {
       sum += v.get(i)
     }
-    return sum
+    sum
   }
 }
 

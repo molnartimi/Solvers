@@ -1,6 +1,5 @@
 package solvers.matrix_toolkits_java_solvers
 
-import breeze.linalg.sum
 import excepctions.InvalidMatrixException
 import no.uib.cipr.matrix.Vector.Norm
 import no.uib.cipr.matrix.{DenseMatrix, DenseVector}
@@ -32,7 +31,7 @@ class MTJSparseSolverPower (threshold: Double) extends MTJSparseSolver {
       val w: DenseVector = {
         val A = new LinkedSparseMatrix(new DenseMatrix(Array(v.getData)))
         val mult = A.mult(q, new LinkedSparseMatrix(1, q.numColumns()))
-        var vec = new DenseVector(q.numColumns())
+        val vec = new DenseVector(q.numColumns())
         for (i <- 0 until A.numColumns()) {
           vec.set(i, mult.get(0, i))
         }
@@ -41,7 +40,7 @@ class MTJSparseSolverPower (threshold: Double) extends MTJSparseSolver {
       converged = w.norm(Norm.Two) <= threshold * gamma
       v.set(v.add(w.scale(1/gamma)))
     }
-    return Right(v.scale(1/sum(v)))
+    Right(v.scale(1/sum(v)))
   }
 
   private def chooseGamma(Q: LinkedSparseMatrix): Double = {
@@ -58,7 +57,7 @@ class MTJSparseSolverPower (threshold: Double) extends MTJSparseSolver {
       }
       if ( rowSum > threshold ) throw new InvalidMatrixException()
     }
-    return qMax + 2
+    qMax + Q.numRows()
   }
 
   private def sum(v: DenseVector): Double = {

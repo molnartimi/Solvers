@@ -50,7 +50,7 @@ class MTJSparseSolverSpec(solver: MTJSparseSolver, name: String) extends FlatSpe
 
   s"Our solver with $name" should "give the steady state distribution of a 4-state ergodic CTMC" in {
     val Right(solution: DenseVector) = solver.solveSteadyState(VALID_4x4_MC._1)
-    norm(solution.add(VALID_4x4_MC._2.scale(-1))) shouldBe <= (1e-10)
+    norm(solution.add(VALID_4x4_MC._2.scale(-1))) shouldBe <= (1e-8)
   }
 
   it should "give NotAMarkovChain answer if the matrix has more columns than rows" in {
@@ -73,18 +73,12 @@ class MTJSparseSolverSpec(solver: MTJSparseSolver, name: String) extends FlatSpe
     solution shouldBe NotAMarkovChain
   }
 
-  it should "count a lot of big generated matrix - binary" in {
-    for (i <- 3 to 100) {
-      val Right(solution) = solver.solveSteadyState(MatrixFactory.makeSparseBinary(i))
-      println(solution.toString())
-    }
+  it should "solve a lot of big generated matrix" in {
+    for (i <- 2 to 1000000) {
+      val (matrix, vector) = MatrixFactory.makeBinary(3)
+      val Right(solution) = solver.solveSteadyState(matrix)
+      norm(solution.add(vector.scale(-1))) shouldBe <=(1e-8)
   }
-
-  it should "count a lot of big generated matrix - simple" in {
-    for (i <- 3 to 100) {
-      val Right(solution) = solver.solveSteadyState(MatrixFactory.makeSparseSimple(i))
-      println(solution.toString())
-    }
   }
 
   private def norm(v: Vector): Double = {

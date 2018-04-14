@@ -1,79 +1,70 @@
 package generated
-
-import breeze.linalg.{DenseMatrix, DenseVector}
+import no.uib.cipr.matrix
+import no.uib.cipr.matrix.{DenseMatrix, DenseVector}
 import no.uib.cipr.matrix.sparse.LinkedSparseMatrix
-import solvers.SolverError
 
 object MatrixFactory {
-  type BreezeResult = Either[(DenseMatrix[Double], DenseVector[Double]), SolverError]
+  type TestData = (LinkedSparseMatrix, matrix.DenseVector)
 
-  def makeBreezeBinary(n: Int): DenseMatrix[Double] = {
-    toDenseMatrix(generateBinary(n))
+  var MU = 1
+  var LAMBDA = 2
+
+  def makeBinary(n: Int): TestData = {
+    (toSparseMatrix(generateBinary(n, MU, LAMBDA)), toSparseVector(solution(n, MU, LAMBDA)))
   }
 
-  def makeBreezeSimple(n: Int): DenseMatrix[Double] = {
-    toDenseMatrix(generateSimple(n))
-  }
-
-  def makeSparseBinary(n: Int): LinkedSparseMatrix = {
-    toSparseMatrix(generateBinary(n))
-  }
-
-  def makeSparseSimple(n: Int): LinkedSparseMatrix = {
-    toSparseMatrix(generateSimple(n))
-  }
-
-  private def toDenseMatrix(matrix: Array[Array[Double]]): DenseMatrix[Double] = {
-    val n = matrix.length
-    val result = Array.ofDim[Double](n * n)
-    for(i <- 0 until n; j <- 0 until n) {
-      result(i * n + j) = matrix(j)(i)
-    }
-
-    new DenseMatrix(n, n, result)
+  def makeBinary(n: Int, mu: Double, lambda: Double): TestData = {
+    (toSparseMatrix(generateBinary(n, mu, lambda)), toSparseVector(solution(n, mu, lambda)))
   }
 
   private def toSparseMatrix(matrix: Array[Array[Double]]): LinkedSparseMatrix = {
-    new LinkedSparseMatrix(new no.uib.cipr.matrix.DenseMatrix(matrix))
+    new LinkedSparseMatrix(new DenseMatrix(matrix))
   }
 
-  private def generateBinary(n: Int): Array[Array[Double]] = {
+  private def toSparseVector(value: Array[Double]): DenseVector = {
+    new DenseVector(value)
+  }
+
+  private def generateBinary(n: Int, mu: Double, lambda: Double): Array[Array[Double]] = {
     val matrix = Array.ofDim[Double](n, n)
-
-    matrix(0) = Array[Double](-(n-1)) ++ Array.fill[Double](n-1)(1)
-
-    for(i <- 1 until n) {
-      matrix(i)(0) = 1
-
-      var j = 1
-      var num = i-1
-      var cnt = 1
-      while(num > 0) {
-        var mod = num % 2
-        matrix(i)(j) = mod
-        cnt += mod
-        j += 1
-        num /= 2
+    for (i <- 0 until n) {
+      var binaryString = toBinaryString(i, n)
+      for (j <- 0 until maxBinLength(n)) {
+        val inverse = if (binaryString(j) == '0') '1' else '0'
+        val state = Integer.parseInt(binaryString.substring(0, Math.max(0,j)) + inverse + binaryString.substring(j+1, maxBinLength(n)), 2)
+        if (state < n) {
+          matrix(i)(state) = if (inverse == '0') mu else lambda
+          matrix(i)(i) -= matrix(i)(state)
+        }
       }
-      matrix(i)(i) = -cnt
     }
-
     matrix
   }
 
-  private def generateSimple(n: Int): Array[Array[Double]] = {
-    var matrix = Array.ofDim[Double](n, n)
-
-    matrix(0)(0) = -1
-    matrix(0)(1) = 1
-    for(i <- 1 until n-1) {
-      matrix(i)(i-1) = 1
-      matrix(i)(i) = -2
-      matrix(i)(i+1) = 1
+  private def solution(n: Int, mu: Double, lambda: Double): Array[Double] = {
+    var solution = Array.ofDim[Double](n)
+    for (i <- 0 until n) {
+      var binX = toBinaryString(i, n)
+      var prod = 1.0
+      for (j <- binX) {
+        prod *= ( if (j == '0') mu else lambda )
+      }
+      solution(i) = prod
     }
-    matrix(n-1)(n-1) = -1
-    matrix(n-1)(n-2) = 1
+    val sum = solution.sum
+    solution = solution.map(x => x/sum)
+    solution
+  }
 
-    matrix
+  private def maxBinLength(dim: Int): Int = {
+    (Math.floor(Math.log(dim) / Math.log(2)) + 1).toInt
+  }
+
+  private def toBinaryString(x: Int, dim: Int): String = {
+    var binX = x.toBinaryString
+    while (binX.length < maxBinLength(dim)) {
+      binX = '0' + binX
+    }
+    binX
   }
 }
