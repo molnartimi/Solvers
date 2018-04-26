@@ -16,51 +16,51 @@ abstract class MTJSolversSpec(name: String) extends FlatSpec with Matchers{
     new DenseVector(Array(0.25/3.5, 0.25/3.5, 2/3.5, 1/3.5))
   )
 
-  // A*x = b  plus the init vector
-  val NOT_MARKOV_EXAMPLE_3x3 = (
-    new LinkedSparseMatrix(new DenseMatrix(Array(
-      Array(1.0, 2.0, 3.0),
-      Array(2.0, 1.0, 1.0),
-      Array(3.0, 2.0, 3.0)
-    ))),
-    new DenseVector(Array(2.0, 3.0, 1.0)),
-    new DenseVector(Array(11.0, 8.0, 15.0)),
-    new DenseVector(Array(5.0, 5.0, 5.0))
-  )
-
-  protected val GEN_SIZE = 4
-  protected val GENERATED = MatrixFactory.makeBinary(GEN_SIZE)
-
-  protected val preconditioned = true
+  protected val preconditioned = false
 
   s"$name solver in matrix toolkis java library" should "give the steady state distribution of a 4-state ergodic CTMC" in {
     test(VALID_4x4_MC._1, VALID_4x4_MC._2)
   }
 
-  it should "give the steady state distribution of a generated ergodic CTMC" in {
-    test(GENERATED._1, GENERATED._2)
+  it should "give the steady state distribution of a  5x5 generated ergodic CTMC" in {
+    val task = MatrixFactory.makeBinary(5)
+    test(task._1, task._2)
   }
 
-  it should "give the solution of a not MC matrix and vector" in {
-    test(NOT_MARKOV_EXAMPLE_3x3._1, NOT_MARKOV_EXAMPLE_3x3._2, NOT_MARKOV_EXAMPLE_3x3._3, NOT_MARKOV_EXAMPLE_3x3._4, true)
+  it should "give the steady state distribution of a  50x50 generated ergodic CTMC" in {
+    val task = MatrixFactory.makeBinary(50)
+    test(task._1, task._2)
+  }
+
+  it should "give the steady state distribution of a  500x500 generated ergodic CTMC" in {
+    val task = MatrixFactory.makeBinary(500)
+    test(task._1, task._2)
+  }
+
+  it should "give the steady state distribution of a  5000x5000 generated ergodic CTMC" in {
+    val task = MatrixFactory.makeBinary(5000)
+    test(task._1, task._2)
   }
 
   protected def test(matrix: Matrix, solution: Vector): Unit = {
     val dim = matrix.numColumns()
-    test(matrix, solution, new ZeroVector(dim), getInitVector(dim), false)
+    test(matrix, solution, new ZeroVector(dim), getInitVector(dim))
   }
 
-  protected def test(matrix:Matrix, realSolution: Vector, right: Vector, init: Vector, origin: Boolean): Unit = {
-    val solver = if (origin) createOriginSolver(init) else createMySolver(init)
+  protected def test(matrix:Matrix, realSolution: Vector, right: Vector, init: Vector): Unit = {
+    val solver = createSolver(init)
     if (preconditioned)
       setPreconditioner(solver, matrix)
-    val solution = solver.solve(matrix, right, init)
+    setIterMonitor(solver)
+    val solution = solver.solve(matrix.transpose(), right, init)
     norm(solution.add(realSolution.scale(-1))) shouldBe <= (1e-8)
   }
 
-  protected def createMySolver(template: Vector): AbstractIterativeSolver
+  protected def setIterMonitor(solver: AbstractIterativeSolver): Unit = {
+    solver.setIterationMonitor(new DefaultIterationMonitor(200, 0, 1e-7, 10))
+  }
 
-  protected def createOriginSolver(template: Vector): AbstractIterativeSolver
+  protected def createSolver(template: Vector): AbstractIterativeSolver
 
   protected def setPreconditioner(solver: AbstractIterativeSolver, matrix: Matrix): Unit =  {
     val M: Preconditioner = new DiagonalPreconditioner(matrix.numColumns());
