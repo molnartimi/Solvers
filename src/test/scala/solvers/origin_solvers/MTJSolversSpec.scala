@@ -16,7 +16,7 @@ abstract class MTJSolversSpec(name: String) extends FlatSpec with Matchers{
     new DenseVector(Array(0.25/3.5, 0.25/3.5, 2/3.5, 1/3.5))
   )
 
-  protected val preconditioned = false
+  protected val preconditioned = true
 
   s"$name solver in matrix toolkis java library" should "give the steady state distribution of a 4-state ergodic CTMC" in {
     test(VALID_4x4_MC._1, VALID_4x4_MC._2)
@@ -50,22 +50,23 @@ abstract class MTJSolversSpec(name: String) extends FlatSpec with Matchers{
   protected def test(matrix:Matrix, realSolution: Vector, right: Vector, init: Vector): Unit = {
     val solver = createSolver(init)
     if (preconditioned)
-      setPreconditioner(solver, matrix)
+      setConditioners(solver, matrix)
     setIterMonitor(solver)
     val solution = solver.solve(matrix.transpose(), right, init)
-    norm(solution.add(realSolution.scale(-1))) shouldBe <= (1e-8)
+    norm(solution.add(realSolution.scale(-1))) shouldBe <= (1e-6)
   }
 
   protected def setIterMonitor(solver: AbstractIterativeSolver): Unit = {
-    solver.setIterationMonitor(new DefaultIterationMonitor(200, 0, 1e-7, 10))
+    solver.setIterationMonitor(new DefaultIterationMonitor(200, 0, 1e-8, 10))
   }
 
   protected def createSolver(template: Vector): AbstractIterativeSolver
 
-  protected def setPreconditioner(solver: AbstractIterativeSolver, matrix: Matrix): Unit =  {
+  protected def setConditioners(solver: AbstractIterativeSolver, matrix: Matrix): Unit =  {
     val M: Preconditioner = new DiagonalPreconditioner(matrix.numColumns());
     M.setMatrix(matrix)
     solver.setPreconditioner(M)
+    solver.setNormalizer(new OneNormNormalizer());
   }
 
   protected def getInitVector(dim: Int): DenseVector = {
