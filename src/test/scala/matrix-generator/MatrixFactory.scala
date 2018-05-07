@@ -56,7 +56,7 @@ object MatrixFactory {
     solution
   }
 
-  private def maxBinLength(dim: Int): Int = {
+  private def maxBinLength(dim: Double): Int = {
     (Math.floor(Math.log(dim) / Math.log(2.0)) + 1).toInt
   }
 

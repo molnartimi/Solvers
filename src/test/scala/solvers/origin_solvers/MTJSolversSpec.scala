@@ -63,14 +63,14 @@ abstract class MTJSolversSpec(name: String) extends FlatSpec with Matchers{
   protected def createSolver(template: Vector): AbstractIterativeSolver
 
   protected def setConditioners(solver: AbstractIterativeSolver, matrix: Matrix): Unit =  {
-    val M: Preconditioner = new DiagonalPreconditioner(matrix.numColumns());
+    val M: Preconditioner = new DiagonalPreconditioner(matrix.numColumns())
     M.setMatrix(matrix)
     solver.setPreconditioner(M)
-    solver.setNormalizer(new OneNormNormalizer());
+    solver.setNormalizer(new OneNormNormalizer())
   }
 
   protected def getInitVector(dim: Int): DenseVector = {
-    new DenseVector(Array.fill[Double](dim)(1.0/dim));
+    new DenseVector(Array.fill[Double](dim)(1.0/dim))
   }
 
   protected def norm(v: Vector): Double = {
