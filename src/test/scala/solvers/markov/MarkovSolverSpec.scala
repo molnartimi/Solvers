@@ -10,7 +10,7 @@ class MarkovSolverSpec extends FlatSpec with Matchers {
 
   def test(solverType: SolverAlgorithmConfig, preconditionerType: PreconditionerConfig, testMatrixDim: Int): Unit = {
     val config = new SolverConfig(solverType, preconditionerType, ToleranceConfig.default)
-    val testData = MatrixFactory.makeBinary(testMatrixDim)
+    val testData = MatrixFactory.makeBinaryCRM(testMatrixDim)
 
     val ctmc = new CTMC(testData._1)
 

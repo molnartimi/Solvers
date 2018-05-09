@@ -1,27 +1,56 @@
 package generated
 import no.uib.cipr.matrix
 import no.uib.cipr.matrix.{DenseMatrix, DenseVector}
-import no.uib.cipr.matrix.sparse.LinkedSparseMatrix
+import no.uib.cipr.matrix.sparse.{CompRowMatrix, LinkedSparseMatrix}
+
+import scala.collection.mutable.ArrayBuffer
 
 object MatrixFactory {
-  type TestData = (LinkedSparseMatrix, matrix.DenseVector)
+  type TestDataLPM = (LinkedSparseMatrix, matrix.DenseVector)
+  type TestDataCRM = (CompRowMatrix, matrix.DenseVector)
 
   var MU = 1.0
   var LAMBDA = 2.0
 
-  def makeBinary(n: Int): TestData = {
-    (toSparseMatrix(generateBinary(n, MU, LAMBDA)), toSparseVector(solution(n, MU, LAMBDA)))
+  def makeBinary(n: Int): TestDataLPM = {
+    (toLinkedSparseMatrix(generateBinary(n, MU, LAMBDA)), toDenseVector(solution(n, MU, LAMBDA)))
   }
 
-  def makeBinary(n: Int, mu: Double, lambda: Double): TestData = {
-    (toSparseMatrix(generateBinary(n, mu, lambda)), toSparseVector(solution(n, mu, lambda)))
+  def makeBinary(n: Int, mu: Double, lambda: Double): TestDataLPM = {
+    (toLinkedSparseMatrix(generateBinary(n, mu, lambda)), toDenseVector(solution(n, mu, lambda)))
   }
 
-  private def toSparseMatrix(matrix: Array[Array[Double]]): LinkedSparseMatrix = {
+  def makeBinaryCRM(n: Int): TestDataCRM = {
+    (toCompRowMatrix(generateBinary(n, MU, LAMBDA)), toDenseVector(solution(n, MU, LAMBDA)))
+  }
+
+  def makeBinaryCRM(n: Int, mu: Double, lambda: Double): TestDataCRM = {
+    (toCompRowMatrix(generateBinary(n, mu, lambda)), toDenseVector(solution(n, mu, lambda)))
+  }
+
+  private def toLinkedSparseMatrix(matrix: Array[Array[Double]]): LinkedSparseMatrix = {
     new LinkedSparseMatrix(new DenseMatrix(matrix))
   }
 
-  private def toSparseVector(value: Array[Double]): DenseVector = {
+  private def toCompRowMatrix(matrix: Array[Array[Double]]): CompRowMatrix = {
+    val nz = new ArrayBuffer[Array[Int]]()
+    for(j <- matrix.indices) {
+      val row = new ArrayBuffer[Int]()
+      for(i <- matrix.indices; if matrix(i)(j) != 0) {
+        row += i
+      }
+      nz += row.toArray
+    }
+    val sparseMatrix = new CompRowMatrix(matrix.length, matrix.length, nz.toArray)
+
+    for(j <- matrix.indices; i <- matrix.indices if matrix(i)(j) != 0) {
+      sparseMatrix.set(j, i, matrix(i)(j))
+    }
+
+    sparseMatrix
+  }
+
+  private def toDenseVector(value: Array[Double]): DenseVector = {
     new DenseVector(value)
   }
 
