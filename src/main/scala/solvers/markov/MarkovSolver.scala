@@ -3,7 +3,7 @@ package solvers.markov
 import no.uib.cipr.matrix.{DenseVector, NotConvergedException, Vector, ZeroVector}
 import no.uib.cipr.matrix.sparse.{AbstractIterativeSolver, DefaultIterationMonitor, OneNormNormalizer}
 
-class MarkovSolver(ctmc: CTMC, config: SolverConfig) {
+class MarkovSolver(ctmc: CTMC, config: SolverConfig, logFile: String = null) {
 
   def solve: Either[SolverError, Vector] = {
     try {
@@ -37,6 +37,9 @@ class MarkovSolver(ctmc: CTMC, config: SolverConfig) {
       0,
       config.toleranceConfig.absoluteTolerance,
       config.toleranceConfig.divergenceTolerance))
+
+    if (logFile != null)
+      solver.setLogger(logFile)
     solver
   }
 

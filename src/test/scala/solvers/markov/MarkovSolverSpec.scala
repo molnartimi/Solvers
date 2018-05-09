@@ -14,7 +14,7 @@ class MarkovSolverSpec extends FlatSpec with Matchers {
 
     val ctmc = new CTMC(testData._1)
 
-    val solver = new MarkovSolver(ctmc, config)
+    val solver = new MarkovSolver(ctmc, config, "testlog1.csv")
     val Right(solution) = solver.solve
 
     differenceBetween(solution.asInstanceOf[DenseVector], testData._2) shouldBe <=(tol)
