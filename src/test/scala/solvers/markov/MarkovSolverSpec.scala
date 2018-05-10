@@ -7,13 +7,24 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class MarkovSolverSpec extends FlatSpec with Matchers {
   val tol = 1e-8
-  val TEST_DIM = 100000
+
+  /**
+    * 2 hatvanyai:
+    * 17 ~ 100 000
+    * 19 ~ 500 000
+    * 20 ~ 1 000 000
+    * 23 ~ 10 000 000
+    * 27 ~ 100 000 000
+    */
+
+  val TEST_DIM = Math.pow(2, 17).toInt
   val preconditioner = Diagonal(TEST_DIM)
-  val LOG_FILE = s"log/log${TEST_DIM}.csv"
+  val compRowMatrix = false
+  val LOG_FILE = s"log/${if (compRowMatrix) "CRM" else "LSM"}log${TEST_DIM}.csv"
 
   def test(solverType: SolverAlgorithmConfig): Unit = {
     val config = new SolverConfig(solverType, preconditioner, ToleranceConfig.default)
-    val testData = MatrixFactory.makeBinaryCRM(TEST_DIM)
+    val testData = if (compRowMatrix) MatrixFactory.makeBinaryCRM(TEST_DIM) else MatrixFactory.makeBinaryLSM(TEST_DIM)
 
     val ctmc = new CTMC(testData._1)
 

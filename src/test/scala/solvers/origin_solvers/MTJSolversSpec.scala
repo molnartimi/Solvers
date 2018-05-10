@@ -23,22 +23,22 @@ abstract class MTJSolversSpec(name: String) extends FlatSpec with Matchers{
   }
 
   it should "give the steady state distribution of a  5x5 generated ergodic CTMC" in {
-    val task = MatrixFactory.makeBinary(5)
+    val task = MatrixFactory.makeBinaryLSM(5)
     test(task._1, task._2)
   }
 
   it should "give the steady state distribution of a  50x50 generated ergodic CTMC" in {
-    val task = MatrixFactory.makeBinary(50)
+    val task = MatrixFactory.makeBinaryLSM(50)
     test(task._1, task._2)
   }
 
   it should "give the steady state distribution of a  500x500 generated ergodic CTMC" in {
-    val task = MatrixFactory.makeBinary(500)
+    val task = MatrixFactory.makeBinaryLSM(500)
     test(task._1, task._2)
   }
 
   it should "give the steady state distribution of a  5000x5000 generated ergodic CTMC" in {
-    val task = MatrixFactory.makeBinary(5000)
+    val task = MatrixFactory.makeBinaryLSM(5000)
     test(task._1, task._2)
   }
 

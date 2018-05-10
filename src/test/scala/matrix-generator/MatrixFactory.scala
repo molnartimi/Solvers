@@ -1,50 +1,107 @@
 package generated
 import no.uib.cipr.matrix
-import no.uib.cipr.matrix.{DenseMatrix, DenseVector}
+import no.uib.cipr.matrix.{DenseMatrix, DenseVector, Matrix}
 import no.uib.cipr.matrix.sparse.{CompRowMatrix, LinkedSparseMatrix}
 
 import scala.collection.mutable.ArrayBuffer
 
+/**
+  * Generate big matrices for testing.
+  * Gives the q transposed.
+  */
 object MatrixFactory {
-  type TestDataLPM = (LinkedSparseMatrix, matrix.DenseVector)
+  type TestDataLSM = (LinkedSparseMatrix, matrix.DenseVector)
   type TestDataCRM = (CompRowMatrix, matrix.DenseVector)
 
-  var MU = 1.0
-  var LAMBDA = 2.0
+  var MU = 100.0
+  var LAMBDA = 0.01
 
-  def makeBinary(n: Int): TestDataLPM = {
-    (toLinkedSparseMatrix(generateBinary(n, MU, LAMBDA)), toDenseVector(solution(n, MU, LAMBDA)))
+  def makeBinaryLSM(n: Int): TestDataLSM = {
+    makeBinaryLSM(n, MU, LAMBDA)
   }
 
-  def makeBinary(n: Int, mu: Double, lambda: Double): TestDataLPM = {
-    (toLinkedSparseMatrix(generateBinary(n, mu, lambda)), toDenseVector(solution(n, mu, lambda)))
+  def makeBinaryLSM(n: Int, mu: Double, lambda: Double): TestDataLSM = {
+    val matrix = new LinkedSparseMatrix(n, n)
+
+    for (j <- 0 until n) {
+      val binaryString = toBinaryString(j, n)
+      var tempRowSum = 0.0
+      for (i <- 0 until maxBinLength(n)) {
+        val inverse = if (binaryString(i) == '0') '1' else '0'
+        val state = Integer.parseInt(binaryString.substring(0, Math.max(0,i)) + inverse + binaryString.substring(i+1, maxBinLength(n)), 2)
+        if (state < n) {
+          val value = if (inverse == '0') mu else lambda
+          matrix.set(state, j, value)
+          tempRowSum -= value
+        }
+      }
+      matrix.set(j, j, tempRowSum)
+    }
+
+    (matrix, toDenseVector(solution(n, mu, lambda)))
   }
 
   def makeBinaryCRM(n: Int): TestDataCRM = {
-    (toCompRowMatrix(generateBinary(n, MU, LAMBDA)), toDenseVector(solution(n, MU, LAMBDA)))
+    makeBinaryCRM(n, MU, LAMBDA)
   }
 
   def makeBinaryCRM(n: Int, mu: Double, lambda: Double): TestDataCRM = {
-    (toCompRowMatrix(generateBinary(n, mu, lambda)), toDenseVector(solution(n, mu, lambda)))
-  }
+    val nz = new ArrayBuffer[ArrayBuffer[Int]]()
+    val values = new ArrayBuffer[ArrayBuffer[Double]]()
+    for(i <- 0 until n) {
+      nz += new ArrayBuffer[Int]()
+      values += new ArrayBuffer[Double]()
+    }
 
-  private def toLinkedSparseMatrix(matrix: Array[Array[Double]]): LinkedSparseMatrix = {
-    new LinkedSparseMatrix(new DenseMatrix(matrix))
+    for (j <- 0 until n) {
+      val binaryString = toBinaryString(j, n)
+      var tempRowSum = 0.0
+      for (i <- 0 until maxBinLength(n)) {
+        val inverse = if (binaryString(i) == '0') '1' else '0'
+        val state = Integer.parseInt(binaryString.substring(0, Math.max(0,i)) + inverse + binaryString.substring(i+1, maxBinLength(n)), 2)
+        if (state < n) {
+          val value = if (inverse == '0') mu else lambda
+          nz(state) += j
+          values(state) += value
+          tempRowSum -= value
+        }
+      }
+      // TODO vajon baj-e, ha nem sorrendben vannak az indexek?
+      nz(j) += j
+      values(j) += tempRowSum
+    }
+
+    val nzArray = Array.ofDim[Array[Int]](n)
+    for(i <- 0 until n) {
+      nzArray(i) = nz(i).toArray
+    }
+
+    val matrix = new CompRowMatrix(n, n, nzArray)
+
+    for(i <- 0 until n) {
+      var j = 0
+      for(idx <- nzArray(i)) {
+        matrix.set(i, idx, values(i)(j))
+        j += 1
+      }
+    }
+
+    (matrix, toDenseVector(solution(n, mu, lambda)))
   }
 
   private def toCompRowMatrix(matrix: Array[Array[Double]]): CompRowMatrix = {
     val nz = new ArrayBuffer[Array[Int]]()
-    for(j <- matrix.indices) {
+    for(i <- matrix.indices) {
       val row = new ArrayBuffer[Int]()
-      for(i <- matrix.indices; if matrix(i)(j) != 0) {
-        row += i
+      for(j <- matrix.indices; if matrix(i)(j) != 0) {
+        row += j
       }
       nz += row.toArray
     }
     val sparseMatrix = new CompRowMatrix(matrix.length, matrix.length, nz.toArray)
 
-    for(j <- matrix.indices; i <- matrix.indices if matrix(i)(j) != 0) {
-      sparseMatrix.set(j, i, matrix(i)(j))
+    for(i <- matrix.indices; j <- matrix.indices if matrix(i)(j) != 0) {
+      sparseMatrix.set(i, j, matrix(i)(j))
     }
 
     sparseMatrix
