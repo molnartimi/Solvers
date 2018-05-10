@@ -7,14 +7,17 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class MarkovSolverSpec extends FlatSpec with Matchers {
   val tol = 1e-8
+  val TEST_DIM = 100000
+  val preconditioner = Diagonal(TEST_DIM)
+  val LOG_FILE = s"log/log${TEST_DIM}.csv"
 
-  def test(solverType: SolverAlgorithmConfig, preconditionerType: PreconditionerConfig, testMatrixDim: Int): Unit = {
-    val config = new SolverConfig(solverType, preconditionerType, ToleranceConfig.default)
-    val testData = MatrixFactory.makeBinary(testMatrixDim)
+  def test(solverType: SolverAlgorithmConfig): Unit = {
+    val config = new SolverConfig(solverType, preconditioner, ToleranceConfig.default)
+    val testData = MatrixFactory.makeBinary(TEST_DIM)
 
     val ctmc = new CTMC(testData._1)
 
-    val solver = new MarkovSolver(ctmc, config, "testlog1.csv")
+    val solver = new MarkovSolver(ctmc, config, LOG_FILE)
     val Right(solution) = solver.solve
 
     differenceBetween(solution.asInstanceOf[DenseVector], testData._2) shouldBe <=(tol)
@@ -25,36 +28,34 @@ class MarkovSolverSpec extends FlatSpec with Matchers {
     difference.norm(matrix.Vector.Norm.Two)
   }
 
-  val TEST_DIM = 10000
-
   "Our continuous time markov chain solver" should "give the steady state distribution of a 1000-state CTMC " +
-    "with BiCG preconditioner" in {
-    test(BiCG, Diagonal, TEST_DIM)
+    "with BiCG solver" in {
+    test(BiCG)
   }
 
   it should "give the steady state distribution " +
-    "with BiCGStab preconditioner" in {
-    test(BiCGStab, Diagonal, TEST_DIM)
+    "with BiCGStab solver" in {
+    test(BiCGStab)
   }
 
   it should "give the steady state distribution " +
-    "with CGS preconditioner" in {
-    test(CGS, Diagonal, TEST_DIM)
+    "with CGS solver" in {
+    test(CGS)
   }
 
   it should "give the steady state distribution " +
-    "with GMRES preconditioner" in {
-    test(GMRES(), Diagonal, TEST_DIM)
+    "with GMRES solver" in {
+    test(GMRES())
   }
 
   it should "give the steady state distribution " +
-    "with IR preconditioner" in {
-    test(IR, Diagonal, TEST_DIM)
+    "with IR solver" in {
+    test(IR)
   }
 
   it should "give the steady state distribution " +
-    "with QMR preconditioner" in {
-    test(QMR, Diagonal, TEST_DIM)
+    "with QMR solver" in {
+    test(QMR)
   }
 
 }

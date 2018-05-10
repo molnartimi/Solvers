@@ -12,7 +12,7 @@ class SolverConfig(val solverAlgorithmConfig: SolverAlgorithmConfig,
   protected var preconditioner: Preconditioner = _
 
   def setPreconditioner(matrix: Matrix): Unit = {
-    preconditioner = PreconditionerFactory.getPreconditioner(preconditionerConfig, matrix)
+    preconditioner = PreconditionerFactory.getPreconditioner(preconditionerConfig)
     preconditioner.setMatrix(matrix)
   }
   def getSolver(template: Vector): AbstractIterativeSolver = {
@@ -31,11 +31,13 @@ case object IR extends SolverAlgorithmConfig
 case object QMR extends SolverAlgorithmConfig
 
 sealed trait PreconditionerConfig
-case object Diagonal extends PreconditionerConfig
-case object AMG extends PreconditionerConfig // TODO sok parametere van, most defaultot hasznaljuk
-case object ICC extends PreconditionerConfig // TODO kipróbálni mi ez
-case object ILU extends PreconditionerConfig
-case object ILUT extends PreconditionerConfig // TODO ennek is van több paramétere
+case class Diagonal(dim: Int) extends PreconditionerConfig
+case class AMG(omegaPreF: Double = 1, omegaPreR: Double = 1.85, omegaPostF: Double = 1.85,
+               omegaPostR: Double = 1, nu1: Int = 1, nu2: Int = 1, gamma: Int = 1, min: Int = 40,
+               omega: Double = 2.0 / 3.0) extends PreconditionerConfig
+case class ICC(matrix: Matrix) extends PreconditionerConfig
+case class ILU(matrix: Matrix) extends PreconditionerConfig
+case class ILUT(matrix: Matrix, tau: Double = 1e-6, p: Int = 25) extends PreconditionerConfig
 
 case class ToleranceConfig(maxIter: Int, absoluteTolerance: Double, divergenceTolerance: Double = 10)
 
@@ -58,13 +60,14 @@ object SolverFactory {
 
 // TODO hibakezelés rossz param adásakor
 object PreconditionerFactory {
-  def getPreconditioner(preconditionerType: PreconditionerConfig, matrix: Matrix): Preconditioner = {
+  def getPreconditioner(preconditionerType: PreconditionerConfig): Preconditioner = {
     preconditionerType match {
-      case Diagonal => new sparse.DiagonalPreconditioner(matrix.numRows())
-      case AMG => new sparse.AMG()
-      case ICC => new sparse.ICC(matrix.asInstanceOf[CompRowMatrix])
-      case ILU => new sparse.ILU(matrix.asInstanceOf[CompRowMatrix])
-      case ILUT => new sparse.ILUT(matrix.asInstanceOf[FlexCompRowMatrix])
+      case Diagonal(dim) => new sparse.DiagonalPreconditioner(dim)
+      case AMG(omegaPreF, omegaPreR, omegaPostF, omegaPostR, nu1, nu2, gamma, min, omega) =>
+        new sparse.AMG(omegaPreF, omegaPreR, omegaPostF, omegaPostR, nu1, nu2, gamma, min, omega)
+      case ICC(matrix) => new sparse.ICC(matrix.asInstanceOf[CompRowMatrix])
+      case ILU(matrix) => new sparse.ILU(matrix.asInstanceOf[CompRowMatrix])
+      case ILUT(matrix, tau, p) => new sparse.ILUT(matrix.asInstanceOf[FlexCompRowMatrix], tau, p)
     }
   }
 }
