@@ -73,13 +73,13 @@ class MTJSparseSolverSpec(solver: MTJSparseSolver, name: String) extends FlatSpe
     solution shouldBe NotAMarkovChain
   }
 
-  it should "solve a lot of big generated matrix" in {
+  /*it should "solve a lot of big generated matrix" in {
     for (i <- 2 to 1000000) {
       val (matrix, vector) = MatrixFactory.makeBinary(3)
       val Right(solution) = solver.solveSteadyState(matrix)
       norm(solution.add(vector.scale(-1))) shouldBe <=(1e-8)
   }
-  }
+  }*/
 
   private def norm(v: Vector): Double = {
     var norm = 0.0
